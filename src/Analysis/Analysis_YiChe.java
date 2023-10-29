@@ -141,7 +141,6 @@ public class Analysis_YiChe {
         String BrandURL = "https://car.yiche.com/";
         String BrandFilePath = "F:\\ZKZD\\Java项目\\PaChong1025文件";
         String BrandFileName = "\\BrandFile.txt";
-
         //      1.下载品牌所在页面
         // Method_1_BrandDown(BrandURL,BrandFilePath,BrandFileName);
 
