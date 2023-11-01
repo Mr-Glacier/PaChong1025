@@ -1,7 +1,9 @@
 package Analysis;
 
+import Dao.DaoCreat;
 import Dao.DaoYiChe;
 import Entity.Brand;
+import Entity.Brand_2;
 import Until.ReadUntil;
 import Until.SaveUntil;
 import org.jsoup.Jsoup;
@@ -19,7 +21,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 
 public class Analysis_YiChe {
-    static DaoYiChe daoYiChe = new DaoYiChe(0, 0);
+
     private static SaveUntil saveUntil = new SaveUntil();
     private static ReadUntil readUntil = new ReadUntil();
 
@@ -30,6 +32,18 @@ public class Analysis_YiChe {
             System.out.println("开始下载");
             Document document = Jsoup.parse(new URL(url).openStream(), "UTF-8", url);
             saveUntil.Method_SaveFile(path + name, document.toString());
+            Thread.sleep(1000);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    public static void Method_Down(String url, String path, String name,int ID) {
+//        url 为下载地址,path 为本地路径 name为本地保存文件名称
+        try {
+            System.out.println("开始下载");
+            Document document = Jsoup.parse(new URL(url).openStream(), "UTF-8", url);
+            saveUntil.Method_SaveFile(path + name, document.toString());
+            daoYiChe.Method_ChangeState(ID);
             Thread.sleep(1000);
         } catch (Exception e) {
             e.printStackTrace();
@@ -93,7 +107,7 @@ public class Analysis_YiChe {
             for (int j = 0; j < Items3.size(); j++) {
                 Element Items4 = Items3.get(j);
                 String BrandName = Items4.attr("data-name");
-                String BrandUrl = "https://car.yiche.com/" + Items4.select("a").attr("href");
+                String BrandUrl = "https://car.yiche.com" + Items4.select("a").attr("href");
                 //System.out.println(BrandUrl);
                 String BrandPicUrl = "https:" + Items4.select(".brand-icon.lazyload").attr("data-original");
                 //https://car.yiche.com/xuanchegongju/?mid=9
@@ -126,16 +140,70 @@ public class Analysis_YiChe {
     public static void Method_4_DownBrand(String path){
         ArrayList<Object> BrandList = daoYiChe.MethodFind();
         for (int i = 0; i < BrandList.size(); i++) {
-            int ID = ((Brand)BrandList.get(i)).getC_BrandID();
+            int ID = ((Brand)BrandList.get(i)).getC_ID();
+            int BrandID = ((Brand)BrandList.get(i)).getC_BrandID();
             String BrandUrl =  ((Brand)BrandList.get(i)).getC_BrandUrl();
             String State = ((Brand)BrandList.get(i)).getC_DownState();
-            System.out.println(ID);
+            System.out.println(BrandID);
             if (State.equals("否")){
-                Method_Down(BrandUrl,path,ID+".txt");
+                Method_Down(BrandUrl,path,BrandID+".txt",ID);
             }
         }
     }
 
+    public static void Method_5_CreatTableBrandMid(){
+        daoCreat1.CreatTable();
+    }
+    public static void Method_6_GetBrandEnglish(String path){
+        ArrayList<Object> BrandList = daoYiChe.MethodFind();
+        for (int i = 0; i < BrandList.size(); i++) {
+            int ID = ((Brand)BrandList.get(i)).getC_ID();
+            int BrandID = ((Brand)BrandList.get(i)).getC_BrandID();
+            String BrandName = ((Brand)BrandList.get(i)).getC_BrandName();
+
+            System.out.println(BrandName);
+            String content = readUntil.Method_ReadFile(path+BrandID+".txt");
+
+            Document document = Jsoup.parse(content);
+            Elements Items1 = document.select(".search-result-list");
+            //System.out.println(Items1.size());
+            Elements Items2= Items1.select(".search-result-list-item");
+            System.out.println(Items2.size());
+            Brand_2 brand_2 = new Brand_2();
+            if (Items2.size()==0){
+                System.out.println("无数据");
+                brand_2.setC_BrandID(BrandID);
+                brand_2.setC_BrandName(BrandName);
+                brand_2.setC_HavingModel(0);
+                brand_2.setC_BrandEnglish("无");
+                brand_2.setC_FactoryURL("无");
+                daoYiChe2.MethodInsert(brand_2);
+            }else {
+                Element Items3= Items2.get(0).select("a").get(0);
+                String Url  = "https://car.yiche.com"+Items3.attr("href");
+                try{
+                    Document document1 = Jsoup.parse(new URL(Url).openStream(), "UTF-8", Url);
+                    Element ItemsB1 = document1.select(".yiche-breadcrumb_item-link").get(2);
+                    String FactoryURL = "https://car.yiche.com"+ItemsB1.attr("href");
+                    String English = ItemsB1.attr("href").replace("/", "");
+                    System.out.println(FactoryURL);
+                    brand_2.setC_BrandID(BrandID);
+                    brand_2.setC_BrandName(BrandName);
+                    brand_2.setC_HavingModel(1);
+                    brand_2.setC_FactoryURL(FactoryURL);
+                    brand_2.setC_BrandEnglish(English);
+                    daoYiChe2.MethodInsert(brand_2);
+                    Thread.sleep(1000);
+                }catch (Exception e){
+                    System.out.println(e);
+                }
+
+            }
+        }
+    }
+    static DaoYiChe daoYiChe = new DaoYiChe(0, 0);
+    static DaoCreat daoCreat1 = new DaoCreat(0,1);
+    static DaoYiChe daoYiChe2 = new DaoYiChe(0, 1);
     public static void main(String[] args) {
         //下载品牌页面
         String BrandURL = "https://car.yiche.com/";
@@ -153,9 +221,16 @@ public class Analysis_YiChe {
 
         //      4.下载车型所在页面
         String BrandPath="F:\\ZKZD\\Java项目\\PaChong1025文件\\车型所在页面\\";
-        Method_4_DownBrand(BrandPath);
+       // Method_4_DownBrand(BrandPath);
 
-        //
+        //      5.创建品牌的中间表,获取品牌英文
+        //Method_5_CreatTableBrandMid();
+
+        //        6.获得厂商URL
+        Method_6_GetBrandEnglish(BrandPath);
+
+        //7.下载厂商URL页面
+
 
     }
 }

@@ -14,9 +14,9 @@
           "TableName": "T_YiChe_Brand"
         },
         {
-          "EntityName": "",
-          "PrimaryKey": "",
-          "TableName": ""
+          "EntityName": "Brand_2",
+          "PrimaryKey": "C_ID",
+          "TableName": "T_YiChe_Brand_mid"
         }
       ]
     },{
