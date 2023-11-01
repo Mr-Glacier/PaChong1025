@@ -7,8 +7,9 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="jsoup-1.12.1" level="project" />
     <orderEntry type="library" name="fastjson-1.2.56" level="project" />
     <orderEntry type="library" name="sqljdbc4-2.0" level="project" />
+    <orderEntry type="library" name="jsoup-1.11.3" level="project" />
+    <orderEntry type="library" name="driver-1.35.1" level="project" />
   </component>
 </module>

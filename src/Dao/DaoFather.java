@@ -65,8 +65,12 @@ public class DaoFather {
     public void MethodIUD(String str) {
         MethodCreateSomeObject();
         try {
+            System.out.println(str.replace("\n", "")
+                    .replace("\t", "").replace("\r", ""));
+
             stmt.executeUpdate(str.replace("\n", "")
                     .replace("\t", "").replace("\r", ""));
+
             //替换插入语句中的特殊情况 例如换行等
             stmt.close();
             conn.close();
@@ -121,7 +125,7 @@ public class DaoFather {
                 ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
                 //获取列数
                 int lieNumber = resultSetMetaData.getColumnCount();
-                System.out.println(lieNumber);
+//                System.out.println(lieNumber);
                 for (int i = 0; i < lieNumber; i++) {
                     //通过序号获取列名
                     String columnName = resultSetMetaData.getColumnName(i + 1);
